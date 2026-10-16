@@ -1,0 +1,22 @@
+{
+  "name": "democourses",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "@cucumber/cucumber": "^13.3.0",
+    "appium": "^3.8.0",
+    "appium-uiautomator2-driver": "^8.7.0"
+  },
+  "dependencies": {
+    "expect-webdriverio": "^8.0.0",
+    "webdriverio": "^10.0.2"
+  }
+}

@@ -1,4 +1,4 @@
-
+import "dotenv/config";
 import {
   Before,
   After,
@@ -14,29 +14,66 @@ import CatalogPage from "../../pages/CatalogPage.js";
 import DetailsPage from "../../pages/DetailsPage.js";
 import CartPage from "../../pages/CartPage.js";
 
-setDefaultTimeout(30 * 1000);
+setDefaultTimeout(120 * 1000);
+
+
 
 Before(async function () {
-  const caps = {
-    platformName: "Android",
-    "appium:deviceName": "emulator-5554",
-    "appium:appPackage": "com.example.democoursesforqa",
-    "appium:appActivity": ".MainActivity",
-    "appium:automationName": "UiAutomator2",
-    "appium:noReset": true,
-  };
+  console.log("A iniciar sessão na Sauce Labs...");
 
-  this.driver = await remote({
-    protocol: "http",
-    hostname: "127.0.0.1",
-    port: 4723,
-    path: "/",
-    capabilities: caps,
+  console.log("Credenciais configuradas:", {
+    username: Boolean(process.env.SAUCE_USERNAME),
+    accessKey: Boolean(process.env.SAUCE_ACCESS_KEY),
+    appId: Boolean(process.env.SAUCE_APP_ID),
   });
 
-  this.catalogPage = new CatalogPage(this.driver);
-  this.detailsPage = new DetailsPage(this.driver);
-  this.cartPage = new CartPage(this.driver);
+  if (
+    !process.env.SAUCE_USERNAME ||
+    !process.env.SAUCE_ACCESS_KEY ||
+    !process.env.SAUCE_APP_ID
+  ) {
+    throw new Error(
+      "Faltam variáveis SAUCE_USERNAME, SAUCE_ACCESS_KEY ou SAUCE_APP_ID no .env"
+    );
+  }
+
+  const caps = {
+    platformName: "Android",
+    "appium:deviceName": "Google Pixel 6 Emulator",
+    "appium:platformVersion": "16.0",
+    "appium:automationName": "UiAutomator2",
+    "appium:app": `storage:${process.env.SAUCE_APP_ID}`,
+    "sauce:options": {
+      username: process.env.SAUCE_USERNAME,
+      accessKey: process.env.SAUCE_ACCESS_KEY,
+      appiumVersion: "2.11.0",
+      build: "TCC QA",
+      name: "DemoCourses - Cucumber",
+      deviceOrientation: "PORTRAIT",
+    },
+  };
+
+  try {
+    this.driver = await remote({
+      protocol: "https",
+      hostname: "ondemand.eu-central-1.saucelabs.com",
+      port: 443,
+      path: "/wd/hub",
+      user: process.env.SAUCE_USERNAME,
+      key: process.env.SAUCE_ACCESS_KEY,
+      connectionRetryTimeout: 120000,
+      capabilities: caps,
+    });
+
+    console.log("Sessão criada:", this.driver.sessionId);
+
+    this.catalogPage = new CatalogPage(this.driver);
+    this.detailsPage = new DetailsPage(this.driver);
+    this.cartPage = new CartPage(this.driver);
+  } catch (error) {
+    console.error("Erro ao criar a sessão:", error.message);
+    throw error;
+  }
 });
 
 After(async function () {
